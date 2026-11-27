@@ -1504,12 +1504,10 @@ class BotRouter:
     # =========================================================================
 
     def _send_sysinfo(self, chat_id: int) -> None:
-        target_disks = list(self._disk_paths)
-        if not target_disks and self._default_save_path:
-            target_disks = [self._default_save_path]
         snap = collect_system_snapshot(
-            disk_paths=target_disks,
+            disk_paths=self._disk_paths,
             smart_devices=self._smart_devices,
+            preferred_save_path=self._default_save_path,
         )
         lines = [
             self._tr.t(
@@ -1520,6 +1518,15 @@ class BotRouter:
             ),
             "",
         ]
+
+        thermals = snap.get("thermals") or []
+        if thermals:
+            t_parts = [
+                f"{escape_html(z['name'])}: <b>{z['temp_c']:.1f}°C</b>"
+                for z in thermals[:3]
+            ]
+            lines.append("🌡 Sistem Sıcaklığı: " + " | ".join(t_parts))
+
         if snap["mem_total"] > 0:
             mem_pct = snap["mem_used"] / snap["mem_total"] * 100.0
             lines.append(
@@ -1540,43 +1547,113 @@ class BotRouter:
                     pct=f"{swap_pct:.1f}",
                 )
             )
+            for sw in snap.get("swaps") or []:
+                lines.append(
+                    f"   • <code>{escape_html(sw['name'])}</code>: "
+                    f"{format_size(sw['used'])} / {format_size(sw['total'])} "
+                    f"(<b>%{sw['used_pct']:.1f}</b>)"
+                )
         if snap["bot_rss"] > 0:
             lines.append(
                 self._tr.t("sysinfo_bot_rss", rss=format_size(snap["bot_rss"]))
             )
 
-        for d in snap["disks"]:
-            if not d.get("exists"):
-                lines.append(f"💾 <code>{escape_html(d['path'])}</code>: —")
-                continue
-            lines.append(
-                self._tr.t(
-                    "sysinfo_disk",
-                    path=escape_html(truncate(d["path"], 34)),
-                    free=format_size(d["free"]),
-                    total=format_size(d["total"]),
-                    pct=f"{d['used_pct']:.1f}",
+        disks = snap.get("disks") or []
+        if disks:
+            lines.append("")
+            lines.append("💾 <b>Depolama Birimleri</b>")
+            for d in disks:
+                label = escape_html(str(d.get("label") or d["path"]))
+                mnt = escape_html(truncate(str(d["path"]), 38))
+                if not d.get("exists"):
+                    lines.append(f"• <b>{label}</b> (<code>{mnt}</code>): —")
+                    continue
+                dev_str = escape_html(str(d.get("device") or "—"))
+                fs_str = escape_html(str(d.get("fstype") or "—"))
+                lines.append(f"\n📁 <b>{label}</b> — <code>{mnt}</code>")
+                lines.append(
+                    f"   • Aygıt: <code>{dev_str}</code> ({fs_str}) | "
+                    f"Toplam: <b>{format_size(d['total'])}</b>"
                 )
-            )
+                lines.append(
+                    f"   • Dolu: <b>{format_size(d['used'])}</b> (%{d['used_pct']:.1f}) | "
+                    f"Boş: <b>{format_size(d['free'])}</b> (%{d['free_pct']:.1f})"
+                )
 
-        for s in snap["smart"]:
-            health = (
-                "🟢 OK"
-                if s.get("passed") is True
-                else ("🔴 FAIL" if s.get("passed") is False else "⚪ —")
-            )
-            temp_str = f"{s['temp_c']}°C" if s.get("temp_c") is not None else "—"
-            model_str = (
-                f" — {escape_html(truncate(s['model'], 24))}"
-                if s.get("model")
-                else ""
-            )
-            lines.append(
-                f"🩺 S.M.A.R.T. (<code>{escape_html(s['device'])}</code>{model_str}): "
-                f"{health} | 🌡 <b>{temp_str}</b>"
-            )
+        smart_list = snap.get("smart") or []
+        if smart_list:
+            lines.append("")
+            lines.append("🩺 <b>Fiziksel Diskler &amp; S.M.A.R.T.</b>")
+            for s in smart_list:
+                is_hdd = s.get("media_type") == "HDD"
+                icon = "💿" if is_hdd else "🔌"
+                title_parts = [
+                    p
+                    for p in (s.get("vendor", "").strip(), s.get("model", "").strip())
+                    if p and (not s.get("model") or p.lower() not in s["model"].lower() or p == s["model"].strip())
+                ]
+                model_lbl = " ".join(title_parts) if title_parts else "Bilinmeyen Disk"
+                media_parts = []
+                if s.get("media_type"):
+                    media_parts.append(s["media_type"])
+                if s.get("rpm"):
+                    media_parts.append(f"{s['rpm']} RPM")
+                media_str = f" ({' • '.join(media_parts)})" if media_parts else ""
 
-        self._tg.send_message(chat_id, "\n".join(lines))
+                lines.append(
+                    f"\n{icon} <code>{escape_html(s['device'])}</code> — "
+                    f"<b>{escape_html(truncate(model_lbl, 34))}</b>{escape_html(media_str)}"
+                )
+
+                serial_str = escape_html(s["serial"]) if s.get("serial") else "—"
+                fw_part = f" | FW: <code>{escape_html(s['firmware'])}</code>" if s.get("firmware") else ""
+                lines.append(f"   • Seri No: <code>{serial_str}</code>{fw_part}")
+
+                meta_bits: List[str] = []
+                if s.get("usb_speed"):
+                    meta_bits.append(f"Bağlantı: {escape_html(s['usb_speed'])}")
+                if s.get("physical_bytes", 0) > 0:
+                    meta_bits.append(f"Kapasite: <b>{format_size(s['physical_bytes'])}</b>")
+                if meta_bits:
+                    lines.append("   • " + " | ".join(meta_bits))
+
+                if s.get("smart_supported"):
+                    health = (
+                        "🟢 OK"
+                        if s.get("passed") is True
+                        else ("🔴 FAIL" if s.get("passed") is False else "⚪ —")
+                    )
+                    temp_str = f"{s['temp_c']}°C" if s.get("temp_c") is not None else "—"
+                    lines.append(f"   • Sağlık: {health} | 🌡 Sıcaklık: <b>{temp_str}</b>")
+
+                    usage_bits: List[str] = []
+                    if s.get("power_on_hours") is not None:
+                        hrs = int(s["power_on_hours"])
+                        days = hrs // 24
+                        usage_bits.append(f"Çalışma: <b>{hrs:,}</b> sa (~{days} gün)")
+                    if s.get("power_cycles") is not None:
+                        usage_bits.append(f"Açılış: <b>{int(s['power_cycles']):,}</b>")
+                    if usage_bits:
+                        lines.append("   • " + " | ".join(usage_bits))
+
+                    sec_bits: List[str] = []
+                    if s.get("reallocated") is not None:
+                        sec_bits.append(f"Yeniden: {s['reallocated']}")
+                    if s.get("pending") is not None:
+                        sec_bits.append(f"Bekleyen: {s['pending']}")
+                    if s.get("uncorrectable") is not None:
+                        sec_bits.append(f"Bozuk: {s['uncorrectable']}")
+                    if s.get("crc_errors") is not None:
+                        sec_bits.append(f"CRC: {s['crc_errors']}")
+                    if sec_bits:
+                        lines.append("   • Sektör: " + " | ".join(sec_bits))
+                else:
+                    lines.append("   • S.M.A.R.T.: Desteklemiyor | 🌡 Sıcaklık: —")
+
+        message = "\n".join(lines)
+        if len(message) > 4000:
+            message = message[:3990] + "\n…"
+        self._tg.send_message(chat_id, message)
 
     def _handle_rss_command(self, chat_id: int, arg: str) -> None:
         if not arg:
