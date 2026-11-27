@@ -1,0 +1,17 @@
+[Unit]
+Description=qbot - Zero-Dependency Telegram Bot for qBittorrent
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/qbot
+ExecStart=/usr/bin/python3 /opt/qbot/main.py
+Environment=PYTHONUNBUFFERED=1
+Restart=on-failure
+RestartSec=10
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

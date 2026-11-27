@@ -23,6 +23,7 @@ from core.formatters import (
     truncate,
 )
 from core.i18n import Translator
+from core.scheduler import SpeedScheduler
 from monitor.system_info import collect_system_snapshot
 from telegram.client import TelegramClient, TelegramError, escape_html
 
@@ -59,6 +60,7 @@ class BotRouter:
         translator: Translator,
         default_save_path: str = "",
         items_per_page: int = 5,
+        scheduler: Optional[SpeedScheduler] = None,
     ) -> None:
         self._tg = tg
         self._qbt = qbt
@@ -66,6 +68,7 @@ class BotRouter:
         self._tr = translator
         self._default_save_path = default_save_path
         self._per_page = max(1, min(15, int(items_per_page)))
+        self._scheduler = scheduler
         self._logger = logging.getLogger("qbot.router")
         self._pending_adds: Dict[str, Dict[str, Any]] = {}
 
@@ -170,6 +173,11 @@ class BotRouter:
                     self._tg.send_message(chat_id, self._tr.t("admin_only"))
                     return
                 self._handle_rss_command(chat_id, arg)
+            elif cmd == "/schedule":
+                if role is not Role.ADMIN:
+                    self._tg.send_message(chat_id, self._tr.t("admin_only"))
+                    return
+                self._handle_schedule_command(chat_id, arg)
             elif cmd == "/speed":
                 if role is not Role.ADMIN:
                     self._tg.send_message(chat_id, self._tr.t("admin_only"))
@@ -582,6 +590,14 @@ class BotRouter:
                     return
                 self._handle_speed_callback(cb_id, chat_id, msg_id, parts)
 
+            elif kind == "sc" and len(parts) >= 2:
+                if role is not Role.ADMIN:
+                    self._tg.answer_callback_query(
+                        cb_id, text=self._tr.t("admin_only"), show_alert=True
+                    )
+                    return
+                self._handle_schedule_callback(cb_id, chat_id, msg_id, parts[1])
+            
             elif kind == "ls" and len(parts) >= 3:
                 flt = parts[1] if parts[1] in _FILTERS else "all"
                 page = max(0, int(parts[2])) if parts[2].isdigit() else 0
@@ -1586,3 +1602,93 @@ class BotRouter:
             )
         else:
             self._tg.send_message(chat_id, self._tr.t("rss_usage"))
+    
+    # =========================================================================
+    # ZAMANLANMIS HIZ PROFILLERI (v2.0)
+    # =========================================================================
+
+    def _render_schedule_panel(self) -> Tuple[str, Dict[str, Any]]:
+        if self._scheduler is None:
+            return self._tr.t("sched_unavailable"), {"inline_keyboard": []}
+
+        info = self._scheduler.get_summary()
+        unlim = self._tr.t("unlimited")
+        state_lbl = self._tr.t("on_label" if info["enabled"] else "off_label")
+        cur_lbl = self._tr.t(
+            "sched_profile_night"
+            if info["current_profile"] == "night"
+            else "sched_profile_day"
+        )
+
+        text = self._tr.t(
+            "sched_msg",
+            state=state_lbl,
+            current=cur_lbl,
+            night_start=info["night_start"],
+            night_end=info["night_end"],
+            night_dl=format_limit(info["night_dl_bytes"], unlim),
+            night_ul=format_limit(info["night_ul_bytes"], unlim),
+            day_dl=format_limit(info["day_dl_bytes"], unlim),
+            day_ul=format_limit(info["day_ul_bytes"], unlim),
+        )
+
+        toggle_icon = "⏸" if info["enabled"] else "▶️"
+        rows = [
+            [
+                {
+                    "text": f"{toggle_icon} {self._tr.t('btn_sched_toggle')}: {state_lbl}",
+                    "callback_data": "sc:tg",
+                }
+            ],
+            [
+                {
+                    "text": f"⚡ {self._tr.t('btn_sched_apply')}",
+                    "callback_data": "sc:ap",
+                },
+                {
+                    "text": f"🔄 {self._tr.t('btn_refresh')}",
+                    "callback_data": "sc:rf",
+                },
+            ],
+        ]
+        return text, {"inline_keyboard": rows}
+
+    def _handle_schedule_command(self, chat_id: int, arg: str) -> None:
+        if self._scheduler is None:
+            self._tg.send_message(chat_id, self._tr.t("sched_unavailable"))
+            return
+
+        sub = arg.strip().lower()
+        if sub in ("on", "enable", "1"):
+            self._scheduler.set_enabled(True)
+        elif sub in ("off", "disable", "0"):
+            self._scheduler.set_enabled(False)
+        elif sub == "apply":
+            self._scheduler.apply_now(notify=False)
+
+        text, markup = self._render_schedule_panel()
+        self._tg.send_message(chat_id, text, reply_markup=markup)
+
+    def _handle_schedule_callback(
+        self, cb_id: str, chat_id: int, msg_id: int, action: str
+    ) -> None:
+        if self._scheduler is None:
+            self._tg.answer_callback_query(
+                cb_id, text=self._tr.t("sched_unavailable"), show_alert=True
+            )
+            return
+
+        toast = self._tr.t("callback_refreshed")
+        if action == "tg":
+            new_state = not self._scheduler.enabled
+            self._scheduler.set_enabled(new_state)
+            toast = self._tr.t(
+                "sched_toggled_on" if new_state else "sched_toggled_off"
+            )
+        elif action == "ap":
+            self._scheduler.apply_now(notify=False)
+            toast = self._tr.t("sched_applied")
+
+        text, markup = self._render_schedule_panel()
+        self._tg.edit_message_text(chat_id, msg_id, text, reply_markup=markup)
+        self._tg.answer_callback_query(cb_id, text=toast)

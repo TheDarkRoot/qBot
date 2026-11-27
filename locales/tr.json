@@ -1,11 +1,11 @@
 {
-  "bot_started": "qbot v1.5 başlatıldı (dil: {lang}, yönetici: {admins}, kullanıcı: {users}).",
+  "bot_started": "qbot v2.0 başlatıldı (dil: {lang}, yönetici: {admins}, kullanıcı: {users}).",
   "unauthorized": "Erişim reddedildi. Telegram kimliğiniz ({user_id}) bu botu kullanmak için yetkili değil.",
   "admin_only": "Bu işlem yalnızca yönetici yetkisiyle yapılabilir.",
   "role_admin": "Yönetici",
   "role_user": "Kullanıcı",
-  "welcome_msg": "<b>qbot v1.5 çevrimiçi</b>\n\nYetki: <b>{role}</b>\nKimliğiniz: <code>{user_id}</code>\nqBittorrent: <code>{qbt_ver}</code>\nTorrent Sayısı: <b>{count}</b>\n\nKategori ve indirme seçenekleriyle başlatmak için sohbete doğrudan <b>magnet linki</b> veya <b>.torrent dosyası</b> gönderebilir, tüm komutlar için /help yazabilirsiniz.",
-  "help_msg": "<b>qbot v1.5 Komutları</b>\n\n/status — Genel hız ve torrent özeti\n/speed — Hız limitleri ve Kaplumbağa modu (Yönetici)\n/speed dl 2.5 — Özel indirme limiti (MB/s, 0=sınırsız)\n/turtle — Kaplumbağa modunu aç/kapat (Yönetici)\n/list — Tüm torrentler (sayfalı)\n/downloading — İndirilenler\n/seeding — Gönderilenler (Seed)\n/completed — Tamamlananlar\n/paused — Duraklatılanlar\n/errored — Hatalı torrentler\n/add &lt;link&gt; — Magnet veya .torrent URL ekle\n/pauseall — Tümünü duraklat (Yönetici)\n/resumeall — Tümünü devam ettir (Yönetici)\n\n<i>İpucu: Sohbete gönderdiğiniz her magnet linki ve .torrent dosyası için indirme öncesi kategori ve sıralı indirme menüsü açılır.</i>",
+  "welcome_msg": "<b>qbot v2.0 çevrimiçi</b>\n\nYetki: <b>{role}</b>\nKimliğiniz: <code>{user_id}</code>\nqBittorrent: <code>{qbt_ver}</code>\nTorrent Sayısı: <b>{count}</b>\n\nKategori ve indirme seçenekleriyle başlatmak için sohbete doğrudan <b>magnet linki</b> veya <b>.torrent dosyası</b> gönderebilir, tüm komutlar için /help yazabilirsiniz.",
+  "help_msg": "<b>qbot v2.0 Komutları</b>\n\n/status — Genel hız ve torrent özeti\n/speed — Hız limitleri ve Kaplumbağa modu (Yönetici)\n/speed dl 2.5 — Özel indirme limiti (MB/s, 0=sınırsız)\n/turtle — Kaplumbağa modunu aç/kapat (Yönetici)\n/list — Tüm torrentler (sayfalı)\n/downloading — İndirilenler\n/seeding — Gönderilenler (Seed)\n/completed — Tamamlananlar\n/paused — Duraklatılanlar\n/errored — Hatalı torrentler\n/add &lt;link&gt; — Magnet veya .torrent URL ekle\n/pauseall — Tümünü duraklat (Yönetici)\n/resumeall — Tümünü devam ettir (Yönetici)\n/schedule — Gece/gündüz hız profilleri (Yönetici)\n/sysinfo — Sistem, RAM ve disk durumu (Yönetici)\n/rss — RSS akışlarını yönet (Yönetici)\n\n<i>İpucu: Sohbete gönderdiğiniz her magnet linki ve .torrent dosyası için indirme öncesi kategori ve sıralı indirme menüsü açılır.</i>",
   "status_msg": "<b>qBittorrent Durumu</b> (<code>{qbt_ver}</code>)\n\n⬇️ İndirme: <b>{dl}</b> (Oturum: {dl_session})\n⬆️ Gönderme: <b>{ul}</b> (Oturum: {ul_session})\n🐢 Kaplumbağa Modu: <b>{turtle}</b>\n\n📦 Toplam: <b>{total}</b>\n⬇️ İnen: <b>{downloading}</b> | ⬆️ Gönderen: <b>{seeding}</b>\n⏸ Duraklatılan: <b>{paused}</b> | ❌ Hatalı: <b>{errored}</b>",
   "turtle_on": "AÇIK",
   "turtle_off": "KAPALI",
@@ -107,5 +107,16 @@
   "rss_removed": "🗑 RSS öğesi silindi: <code>{name}</code>",
   "rss_usage": "Kullanım:\n<code>/rss</code> — Akışları listele\n<code>/rss add &lt;url&gt; [ad]</code> — Akış ekle\n<code>/rss del &lt;ad&gt;</code> — Akış sil",
   "cmd_sysinfo": "Sistem, bellek ve disk durumu",
-  "cmd_rss": "RSS akışlarını listele/yönet"
+  "cmd_rss": "RSS akışlarını listele/yönet",
+  "sched_msg": "<b>Zamanlanmış Hız Profilleri</b>\n\nDurum: <b>{state}</b>\nAktif Dilim: <b>{current}</b>\n\n🌙 <b>Gece</b> ({night_start} – {night_end})\n   ⬇️ Limit: <b>{night_dl}</b> | ⬆️ Limit: <b>{night_ul}</b>\n☀️ <b>Gündüz</b> (diğer saatler)\n   ⬇️ Limit: <b>{day_dl}</b> | ⬆️ Limit: <b>{day_ul}</b>",
+  "sched_profile_night": "🌙 Gece",
+  "sched_profile_day": "☀️ Gündüz",
+  "sched_switched": "⏱ <b>Hız Profili Değişti: {profile}</b>\n⬇️ Limit: <b>{dl_limit}</b> | ⬆️ Limit: <b>{ul_limit}</b>",
+  "sched_toggled_on": "Zamanlayıcı açıldı ve aktif profil uygulandı.",
+  "sched_toggled_off": "Zamanlayıcı kapatıldı.",
+  "sched_applied": "Mevcut zaman diliminin hız profili uygulandı.",
+  "sched_unavailable": "Zamanlayıcı modülü başlatılamadı.",
+  "btn_sched_toggle": "Zamanlayıcı",
+  "btn_sched_apply": "Şimdi Uygula",
+  "cmd_schedule": "Gece/gündüz hız profilleri"
 }

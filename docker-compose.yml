@@ -1,0 +1,10 @@
+services:
+  qbot:
+    build: .
+    container_name: qbot
+    restart: unless-stopped
+    environment:
+      - TZ=Europe/Istanbul
+      - QBOT_CONFIG_PATH=/config/config.json
+    volumes:
+      - ./config.json:/config/config.json:ro

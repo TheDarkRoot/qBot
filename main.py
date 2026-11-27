@@ -4,7 +4,6 @@ import os
 import signal
 import sys
 import threading
-import time
 from pathlib import Path
 from typing import Any, Optional
 
@@ -14,6 +13,7 @@ from core.config import ConfigError, load_config
 from core.i18n import Translator
 from core.logger import setup_logger
 from core.notifier import CompletionNotifier
+from core.scheduler import SpeedScheduler  # YENI (v2.0)
 from handlers.router import BotRouter
 from telegram.client import (
     TelegramAPIError,
@@ -31,16 +31,17 @@ def _register_commands(tg: TelegramClient, tr: Translator) -> None:
             {"command": "status", "description": tr.t("cmd_status")},
             {"command": "speed", "description": tr.t("cmd_speed")},
             {"command": "turtle", "description": tr.t("cmd_turtle")},
+            {"command": "schedule", "description": tr.t("cmd_schedule")},  # YENI (v2.0)
             {"command": "list", "description": tr.t("cmd_list")},
             {"command": "downloading", "description": tr.t("cmd_downloading")},
             {"command": "seeding", "description": tr.t("cmd_seeding")},
             {"command": "completed", "description": tr.t("cmd_completed")},
             {"command": "paused", "description": tr.t("cmd_paused")},
             {"command": "errored", "description": tr.t("cmd_errored")},
-            {"command": "help", "description": tr.t("cmd_help")},
-            {"command": "start", "description": tr.t("cmd_start")},
             {"command": "sysinfo", "description": tr.t("cmd_sysinfo")},
             {"command": "rss", "description": tr.t("cmd_rss")},
+            {"command": "help", "description": tr.t("cmd_help")},
+            {"command": "start", "description": tr.t("cmd_start")},
         ]
     )
 
@@ -102,15 +103,7 @@ def main() -> int:
         logger.error("Telegram connection check failed: %s", exc)
         return 1
 
-    router = BotRouter(
-        tg=tg,
-        qbt=qbt,
-        auth=auth,
-        translator=tr,
-        default_save_path=qbt_cfg.get("default_save_path", ""),
-        items_per_page=cfg["bot"].get("items_per_page", 5),
-    )
-
+    # 1. Once kapanis sinyalini olusturuyoruz
     stop_event = threading.Event()
 
     def _handle_stop(signum: int, _frame: Any) -> None:
@@ -120,6 +113,28 @@ def main() -> int:
     signal.signal(signal.SIGINT, _handle_stop)
     if hasattr(signal, "SIGTERM"):
         signal.signal(signal.SIGTERM, _handle_stop)
+
+    # 2. Zamanlayiciyi stop_event ile olusturup baslatiyoruz
+    scheduler = SpeedScheduler(
+        qbt=qbt,
+        tg=tg,
+        translator=tr,
+        notify_chat_ids=cfg["telegram"]["admin_ids"],
+        stop_event=stop_event,
+        cfg=cfg.get("scheduler", {}),
+    )
+    scheduler.start()
+
+    # 3. Router'a scheduler'i bagliyoruz ki /schedule komutlari onu yonetebilsin
+    router = BotRouter(
+        tg=tg,
+        qbt=qbt,
+        auth=auth,
+        translator=tr,
+        default_save_path=qbt_cfg.get("default_save_path", ""),
+        items_per_page=cfg["bot"].get("items_per_page", 5),
+        scheduler=scheduler,
+    )
 
     notifier: Optional[CompletionNotifier] = None
     if cfg["bot"].get("notify_on_complete", True):
@@ -174,10 +189,16 @@ def main() -> int:
             except (TelegramError, QBittorrentError) as exc:
                 logger.error("Update %s failed: %s", update.get("update_id"), exc)
             except Exception as exc:
-                logger.exception("Unexpected error handling update %s: %s", update.get("update_id"), exc)
+                logger.exception(
+                    "Unexpected error handling update %s: %s",
+                    update.get("update_id"),
+                    exc,
+                )
 
+    # 4. Kapanirken arka plan is parcaciklarinin temizce durmasini bekliyoruz
     if notifier is not None:
         notifier.join(timeout=5.0)
+    scheduler.join(timeout=5.0)
     logger.info("qbot stopped cleanly.")
     return 0
 

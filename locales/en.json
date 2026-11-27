@@ -1,11 +1,11 @@
 {
-  "bot_started": "qbot v1.5 started (language: {lang}, admins: {admins}, users: {users}).",
+  "bot_started": "qbot v2.0 started (language: {lang}, admins: {admins}, users: {users}).",
   "unauthorized": "Access denied. Your Telegram ID ({user_id}) is not authorized to use this bot.",
   "admin_only": "This action requires administrator privileges.",
   "role_admin": "Admin",
   "role_user": "User",
-  "welcome_msg": "<b>qbot v1.5 is online</b>\n\nRole: <b>{role}</b>\nYour ID: <code>{user_id}</code>\nqBittorrent: <code>{qbt_ver}</code>\nTorrents: <b>{count}</b>\n\nSend a <b>magnet link</b> or <b>.torrent file</b> directly to configure &amp; start downloading, or use /help.",
-  "help_msg": "<b>qbot v1.5 Commands</b>\n\n/status — Global speeds &amp; torrent summary\n/speed — Speed limits &amp; Turtle mode (Admin)\n/speed dl 2.5 — Set custom DL limit in MB/s (0=unlimited)\n/turtle — Toggle Turtle mode (Admin)\n/list — All torrents (paginated)\n/downloading — Active downloads\n/seeding — Active seeding torrents\n/completed — Completed torrents\n/paused — Paused/stopped torrents\n/errored — Torrents with errors\n/add &lt;link&gt; — Add magnet or .torrent URL\n/pauseall — Pause all torrents (Admin)\n/resumeall — Resume all torrents (Admin)\n\n<i>Tip: Paste any magnet link or send a .torrent file directly into this chat to pick category &amp; options before downloading.</i>",
+  "welcome_msg": "<b>qbot v2.0 is online</b>\n\nRole: <b>{role}</b>\nYour ID: <code>{user_id}</code>\nqBittorrent: <code>{qbt_ver}</code>\nTorrents: <b>{count}</b>\n\nSend a <b>magnet link</b> or <b>.torrent file</b> directly to configure &amp; start downloading, or use /help.",
+  "help_msg": "<b>qbot v2.0 Commands</b>\n\n/status — Global speeds &amp; torrent summary\n/speed — Speed limits &amp; Turtle mode (Admin)\n/speed dl 2.5 — Set custom DL limit in MB/s (0=unlimited)\n/turtle — Toggle Turtle mode (Admin)\n/list — All torrents (paginated)\n/downloading — Active downloads\n/seeding — Active seeding torrents\n/completed — Completed torrents\n/paused — Paused/stopped torrents\n/errored — Torrents with errors\n/add &lt;link&gt; — Add magnet or .torrent URL\n/pauseall — Pause all torrents (Admin)\n/resumeall — Resume all torrents (Admin)\n/schedule — Day/night speed profiles (Admin)\n/sysinfo — System, memory &amp; disk status (Admin)\n/rss — List or manage RSS feeds (Admin)\n\n<i>Tip: Paste any magnet link or send a .torrent file directly into this chat to pick category &amp; options before downloading.</i>",
   "status_msg": "<b>qBittorrent Status</b> (<code>{qbt_ver}</code>)\n\n⬇️ Download: <b>{dl}</b> (Session: {dl_session})\n⬆️ Upload: <b>{ul}</b> (Session: {ul_session})\n🐢 Alt Speed Mode: <b>{turtle}</b>\n\n📦 Total: <b>{total}</b>\n⬇️ Downloading: <b>{downloading}</b> | ⬆️ Seeding: <b>{seeding}</b>\n⏸ Paused: <b>{paused}</b> | ❌ Errored: <b>{errored}</b>",
   "turtle_on": "ON",
   "turtle_off": "OFF",
@@ -107,5 +107,16 @@
   "rss_removed": "🗑 RSS item removed: <code>{name}</code>",
   "rss_usage": "Usage:\n<code>/rss</code> — List feeds\n<code>/rss add &lt;url&gt; [name]</code> — Add feed\n<code>/rss del &lt;name&gt;</code> — Remove feed",
   "cmd_sysinfo": "System, memory & disk status",
-  "cmd_rss": "List or manage RSS feeds"
+  "cmd_rss": "List or manage RSS feeds",
+  "sched_msg": "<b>Scheduled Speed Profiles</b>\n\nStatus: <b>{state}</b>\nCurrent Window: <b>{current}</b>\n\n🌙 <b>Night</b> ({night_start} – {night_end})\n   ⬇️ Limit: <b>{night_dl}</b> | ⬆️ Limit: <b>{night_ul}</b>\n☀️ <b>Day</b> (other hours)\n   ⬇️ Limit: <b>{day_dl}</b> | ⬆️ Limit: <b>{day_ul}</b>",
+  "sched_profile_night": "🌙 Night",
+  "sched_profile_day": "☀️ Day",
+  "sched_switched": "⏱ <b>Speed Profile Switched: {profile}</b>\n⬇️ Limit: <b>{dl_limit}</b> | ⬆️ Limit: <b>{ul_limit}</b>",
+  "sched_toggled_on": "Scheduler enabled and active profile applied.",
+  "sched_toggled_off": "Scheduler disabled.",
+  "sched_applied": "Current speed profile applied.",
+  "sched_unavailable": "Scheduler module is unavailable.",
+  "btn_sched_toggle": "Scheduler",
+  "btn_sched_apply": "Apply Now",
+  "cmd_schedule": "Day/night speed profiles"
 }

@@ -64,6 +64,17 @@ DEFAULT_CONFIG: Dict[str, Any] = {
         "log_to_file": False,
         "log_file": "logs/qbot.log",
     },
+    "scheduler": {
+        "enabled": False,
+        "check_interval": 60,
+        "night_start": "01:00",
+        "night_end": "07:00",
+        "night_dl_limit_kb": 0,
+        "night_ul_limit_kb": 0,
+        "day_dl_limit_kb": 3072,
+        "day_ul_limit_kb": 512,
+        "notify_on_switch": False,
+    },
     "monitor": {
         "enabled": False,
         "disk_paths": [],
