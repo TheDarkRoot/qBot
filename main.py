@@ -29,6 +29,8 @@ def _register_commands(tg: TelegramClient, tr: Translator) -> None:
     tg.set_my_commands(
         [
             {"command": "status", "description": tr.t("cmd_status")},
+            {"command": "speed", "description": tr.t("cmd_speed")},
+            {"command": "turtle", "description": tr.t("cmd_turtle")},
             {"command": "list", "description": tr.t("cmd_list")},
             {"command": "downloading", "description": tr.t("cmd_downloading")},
             {"command": "seeding", "description": tr.t("cmd_seeding")},
@@ -37,6 +39,8 @@ def _register_commands(tg: TelegramClient, tr: Translator) -> None:
             {"command": "errored", "description": tr.t("cmd_errored")},
             {"command": "help", "description": tr.t("cmd_help")},
             {"command": "start", "description": tr.t("cmd_start")},
+            {"command": "sysinfo", "description": tr.t("cmd_sysinfo")},
+            {"command": "rss", "description": tr.t("cmd_rss")},
         ]
     )
 

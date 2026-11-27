@@ -101,15 +101,20 @@ class QBittorrentClient:
         self._cookie_jar = http.cookiejar.CookieJar()
         self._webapi_version: Optional[Tuple[int, ...]] = None
 
-        if verify_ssl:
-            ssl_context = ssl.create_default_context()
-        else:
-            ssl_context = ssl._create_unverified_context()
+        handlers: List[urllib.request.BaseHandler] = [
+            urllib.request.HTTPCookieProcessor(self._cookie_jar)
+        ]
+        # RAM optimizasyonu: SSL sertifika paketini yalnizca HTTPS adreslerinde yukle
+        if self._base_url.lower().startswith("https://"):
+            ssl_context = (
+                ssl.create_default_context()
+                if verify_ssl
+                else ssl._create_unverified_context()
+            )
+            handlers.append(urllib.request.HTTPSHandler(context=ssl_context))
 
-        self._opener = urllib.request.build_opener(
-            urllib.request.HTTPCookieProcessor(self._cookie_jar),
-            urllib.request.HTTPSHandler(context=ssl_context),
-        )
+        self._opener = urllib.request.build_opener(*handlers)
+
 
     @property
     def is_v5(self) -> bool:

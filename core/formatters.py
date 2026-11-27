@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import urllib.parse
 from typing import Optional
 
 from telegram.client import escape_html
@@ -18,6 +19,13 @@ def format_size(num_bytes: int | float) -> str:
 
 def format_speed(bytes_per_sec: int | float) -> str:
     return f"{format_size(bytes_per_sec)}/s"
+
+
+def format_limit(bytes_per_sec: int | float, unlimited_label: str = "∞") -> str:
+    val = int(bytes_per_sec or 0)
+    if val <= 0:
+        return unlimited_label
+    return format_speed(val)
 
 
 def format_eta(seconds: int) -> str:
@@ -87,3 +95,26 @@ def is_paused_state(state: str) -> bool:
 
 def safe_category(category: Optional[str]) -> str:
     return escape_html(category) if category else "—"
+
+
+_TRACKER_STATUS = {
+    0: "⚪ Disabled",
+    1: "⏳ Not contacted",
+    2: "🟢 Working",
+    3: "🔄 Updating",
+    4: "🔴 Error",
+}
+
+
+def format_tracker_status(status: int) -> str:
+    return _TRACKER_STATUS.get(int(status), "ℹ️ Unknown")
+
+
+def safe_tracker_host(url: str) -> str:
+    """Return tracker host only so private passkeys in announce URLs never leak."""
+    raw = str(url or "").strip()
+    if raw.startswith("**"):
+        return escape_html(raw.strip("* []"))
+    parsed = urllib.parse.urlparse(raw)
+    host = parsed.netloc or raw.split("?")[0]
+    return escape_html(truncate(host, 36))
