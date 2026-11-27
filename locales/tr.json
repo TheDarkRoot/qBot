@@ -1,0 +1,5 @@
+{
+  "bot_started": "qbot başlatıldı (dil: {lang}, yönetici: {admins}, kullanıcı: {users}).",
+  "unauthorized": "Erişim reddedildi. Telegram kimliğiniz bu botu kullanmak için yetkili değil.",
+  "admin_only": "Bu işlem yalnızca yönetici yetkisiyle yapılabilir."
+}

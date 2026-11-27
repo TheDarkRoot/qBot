@@ -1,0 +1,22 @@
+# Gercek yapilandirma ve gizli anahtarlar (ASLA GitHub'a gitmez)
+config.json
+.env
+*.pem
+*.key
+
+# Loglar ve gecici dosyalar
+logs/
+*.log
+*.tmp
+
+# Python onbellek ve sanal ortam dosyalari
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Editor ve isletim sistemi dosyalari
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

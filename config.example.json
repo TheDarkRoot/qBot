@@ -1,0 +1,30 @@
+{
+  "telegram": {
+    "bot_token": "123456789:PUT_YOUR_BOT_TOKEN_HERE",
+    "admin_ids": [123456789],
+    "user_ids": [],
+    "poll_timeout": 30
+  },
+  "qbittorrent": {
+    "url": "http://127.0.0.1:9080",
+    "username": "admin",
+    "password": "PUT_YOUR_PASSWORD_HERE",
+    "verify_ssl": true,
+    "timeout": 15,
+    "default_save_path": ""
+  },
+  "bot": {
+    "language": "en",
+    "items_per_page": 5,
+    "log_level": "INFO",
+    "log_to_file": false,
+    "log_file": "logs/qbot.log"
+  },
+  "monitor": {
+    "enabled": false,
+    "disk_paths": [],
+    "smart_devices": [],
+    "disk_warn_percent": 90,
+    "temp_warn_celsius": 50
+  }
+}

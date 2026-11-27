@@ -1,0 +1,5 @@
+{
+  "bot_started": "qbot initialized (language: {lang}, admins: {admins}, users: {users}).",
+  "unauthorized": "Access denied. Your Telegram ID is not authorized to use this bot.",
+  "admin_only": "This action requires administrator privileges."
+}
