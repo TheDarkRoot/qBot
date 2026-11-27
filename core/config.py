@@ -56,8 +56,10 @@ DEFAULT_CONFIG: Dict[str, Any] = {
         "default_save_path": "",
     },
     "bot": {
-        "language": "en",
+        "language": "tr",
         "items_per_page": 5,
+        "notify_on_complete": True,
+        "notify_interval": 30,
         "log_level": "INFO",
         "log_to_file": False,
         "log_file": "logs/qbot.log",
