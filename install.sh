@@ -32,11 +32,13 @@ echo "[2/4] Installing minimal Python 3 packages..."
 case "$PLATFORM" in
     entware)
         /opt/bin/opkg update
-        /opt/bin/opkg install python3-light python3-urllib python3-openssl python3-logging python3-email python3-codecs python3-uuid ca-bundle
+        /opt/bin/opkg install python3-light python3-urllib python3-openssl python3-logging python3-codecs python3-uuid ca-bundle
+        /opt/bin/opkg install python3-email >/dev/null 2>&1 || true
         ;;
     openwrt)
         opkg update
-        opkg install python3-light python3-urllib python3-openssl python3-logging python3-email python3-codecs python3-uuid ca-bundle
+        opkg install python3-light python3-urllib python3-openssl python3-logging python3-codecs python3-uuid ca-bundle
+        opkg install python3-email >/dev/null 2>&1 || true
         ;;
     systemd)
         if ! command -v python3 >/dev/null 2>&1; then
