@@ -78,7 +78,7 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     "monitor": {
         "enabled": False,
         "disk_paths": [],
-        "smart_devices": [],
+        "smart_devices": ["auto"],
         "disk_warn_percent": 90,
         "temp_warn_celsius": 50,
     },
@@ -136,7 +136,12 @@ def load_config(config_path: Path) -> Tuple[Dict[str, Any], List[str]]:
 
 def _validate_config(cfg: Dict[str, Any]) -> None:
     token = str(cfg["telegram"].get("bot_token", "")).strip()
-    if not token or "PUT_YOUR_BOT_TOKEN" in token or ":" not in token:
+    if (
+        not token
+        or "PUT_YOUR_BOT_TOKEN" in token
+        or "YOUR_TELEGRAM_BOT_TOKEN" in token
+        or ":" not in token
+    ):
         raise ConfigError("A valid Telegram 'bot_token' is required.")
 
     admin_ids = cfg["telegram"].get("admin_ids", [])

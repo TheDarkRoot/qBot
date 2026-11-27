@@ -13,7 +13,7 @@ from core.config import ConfigError, load_config
 from core.i18n import Translator
 from core.logger import setup_logger
 from core.notifier import CompletionNotifier
-from core.scheduler import SpeedScheduler  # YENI (v2.0)
+from core.scheduler import SpeedScheduler
 from handlers.router import BotRouter
 from telegram.client import (
     TelegramAPIError,
@@ -31,7 +31,7 @@ def _register_commands(tg: TelegramClient, tr: Translator) -> None:
             {"command": "status", "description": tr.t("cmd_status")},
             {"command": "speed", "description": tr.t("cmd_speed")},
             {"command": "turtle", "description": tr.t("cmd_turtle")},
-            {"command": "schedule", "description": tr.t("cmd_schedule")},  # YENI (v2.0)
+            {"command": "schedule", "description": tr.t("cmd_schedule")},
             {"command": "list", "description": tr.t("cmd_list")},
             {"command": "downloading", "description": tr.t("cmd_downloading")},
             {"command": "seeding", "description": tr.t("cmd_seeding")},
@@ -103,7 +103,6 @@ def main() -> int:
         logger.error("Telegram connection check failed: %s", exc)
         return 1
 
-    # 1. Once kapanis sinyalini olusturuyoruz
     stop_event = threading.Event()
 
     def _handle_stop(signum: int, _frame: Any) -> None:
@@ -114,7 +113,6 @@ def main() -> int:
     if hasattr(signal, "SIGTERM"):
         signal.signal(signal.SIGTERM, _handle_stop)
 
-    # 2. Zamanlayiciyi stop_event ile olusturup baslatiyoruz
     scheduler = SpeedScheduler(
         qbt=qbt,
         tg=tg,
@@ -125,7 +123,7 @@ def main() -> int:
     )
     scheduler.start()
 
-    # 3. Router'a scheduler'i bagliyoruz ki /schedule komutlari onu yonetebilsin
+    mon_cfg = cfg.get("monitor", {})
     router = BotRouter(
         tg=tg,
         qbt=qbt,
@@ -134,6 +132,8 @@ def main() -> int:
         default_save_path=qbt_cfg.get("default_save_path", ""),
         items_per_page=cfg["bot"].get("items_per_page", 5),
         scheduler=scheduler,
+        disk_paths=mon_cfg.get("disk_paths", []),
+        smart_devices=mon_cfg.get("smart_devices", ["auto"]),
     )
 
     notifier: Optional[CompletionNotifier] = None
@@ -195,7 +195,6 @@ def main() -> int:
                     exc,
                 )
 
-    # 4. Kapanirken arka plan is parcaciklarinin temizce durmasini bekliyoruz
     if notifier is not None:
         notifier.join(timeout=5.0)
     scheduler.join(timeout=5.0)

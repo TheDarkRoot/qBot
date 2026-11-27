@@ -61,6 +61,8 @@ class BotRouter:
         default_save_path: str = "",
         items_per_page: int = 5,
         scheduler: Optional[SpeedScheduler] = None,
+        disk_paths: Optional[List[str]] = None,
+        smart_devices: Optional[List[str]] = None,
     ) -> None:
         self._tg = tg
         self._qbt = qbt
@@ -69,6 +71,10 @@ class BotRouter:
         self._default_save_path = default_save_path
         self._per_page = max(1, min(15, int(items_per_page)))
         self._scheduler = scheduler
+        self._disk_paths = list(disk_paths or [])
+        self._smart_devices = (
+            list(smart_devices) if smart_devices is not None else ["auto"]
+        )
         self._logger = logging.getLogger("qbot.router")
         self._pending_adds: Dict[str, Dict[str, Any]] = {}
 
@@ -597,7 +603,7 @@ class BotRouter:
                     )
                     return
                 self._handle_schedule_callback(cb_id, chat_id, msg_id, parts[1])
-            
+
             elif kind == "ls" and len(parts) >= 3:
                 flt = parts[1] if parts[1] in _FILTERS else "all"
                 page = max(0, int(parts[2])) if parts[2].isdigit() else 0
@@ -1492,17 +1498,18 @@ class BotRouter:
         text, markup = self._render_list(flt, page)
         self._tg.edit_message_text(chat_id, msg_id, text, reply_markup=markup)
         self._tg.answer_callback_query(cb_id, text=toast)
+
     # =========================================================================
     # SISTEM / DISK / S.M.A.R.T. VE RSS YONETIMI (v2.0)
     # =========================================================================
 
     def _send_sysinfo(self, chat_id: int) -> None:
-        default_disks = (
-            [self._default_save_path] if self._default_save_path else []
-        )
+        target_disks = list(self._disk_paths)
+        if not target_disks and self._default_save_path:
+            target_disks = [self._default_save_path]
         snap = collect_system_snapshot(
-            disk_paths=default_disks,
-            smart_devices=[],
+            disk_paths=target_disks,
+            smart_devices=self._smart_devices,
         )
         lines = [
             self._tr.t(
@@ -1553,10 +1560,20 @@ class BotRouter:
             )
 
         for s in snap["smart"]:
-            health = "🟢 OK" if s.get("passed") is True else ("🔴 FAIL" if s.get("passed") is False else "⚪ —")
+            health = (
+                "🟢 OK"
+                if s.get("passed") is True
+                else ("🔴 FAIL" if s.get("passed") is False else "⚪ —")
+            )
             temp_str = f"{s['temp_c']}°C" if s.get("temp_c") is not None else "—"
+            model_str = (
+                f" — {escape_html(truncate(s['model'], 24))}"
+                if s.get("model")
+                else ""
+            )
             lines.append(
-                f"🩺 <code>{escape_html(s['device'])}</code>: {health} ({temp_str})"
+                f"🩺 S.M.A.R.T. (<code>{escape_html(s['device'])}</code>{model_str}): "
+                f"{health} | 🌡 <b>{temp_str}</b>"
             )
 
         self._tg.send_message(chat_id, "\n".join(lines))
@@ -1602,7 +1619,7 @@ class BotRouter:
             )
         else:
             self._tg.send_message(chat_id, self._tr.t("rss_usage"))
-    
+
     # =========================================================================
     # ZAMANLANMIS HIZ PROFILLERI (v2.0)
     # =========================================================================
