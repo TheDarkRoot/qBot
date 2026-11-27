@@ -1,5 +1,11 @@
 {
   "bot_started": "qbot başlatıldı (dil: {lang}, yönetici: {admins}, kullanıcı: {users}).",
-  "unauthorized": "Erişim reddedildi. Telegram kimliğiniz bu botu kullanmak için yetkili değil.",
-  "admin_only": "Bu işlem yalnızca yönetici yetkisiyle yapılabilir."
+  "unauthorized": "Erişim reddedildi. Telegram kimliğiniz ({user_id}) bu botu kullanmak için yetkili değil.",
+  "admin_only": "Bu işlem yalnızca yönetici yetkisiyle yapılabilir.",
+  "role_admin": "Yönetici",
+  "role_user": "Kullanıcı",
+  "welcome_msg": "<b>qbot çevrimiçi</b>\n\nYetki: <b>{role}</b>\nKimliğiniz: <code>{user_id}</code>\nqBittorrent: <code>{qbt_ver}</code>\nTorrent Sayısı: <b>{count}</b>",
+  "ping_msg": "<b>Pong!</b>\n\nBot: <code>@{username}</code>\nqBittorrent: <code>{qbt_ver}</code>\nTorrent: <b>{count}</b> | İndirme: <b>{dl}</b> | Gönderme: <b>{ul}</b>\nSaat: <code>{now}</code>",
+  "btn_refresh": "Yenile",
+  "callback_refreshed": "Güncellendi!"
 }

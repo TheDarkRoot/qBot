@@ -1,5 +1,11 @@
 {
   "bot_started": "qbot initialized (language: {lang}, admins: {admins}, users: {users}).",
-  "unauthorized": "Access denied. Your Telegram ID is not authorized to use this bot.",
-  "admin_only": "This action requires administrator privileges."
+  "unauthorized": "Access denied. Your Telegram ID ({user_id}) is not authorized to use this bot.",
+  "admin_only": "This action requires administrator privileges.",
+  "role_admin": "Admin",
+  "role_user": "User",
+  "welcome_msg": "<b>qbot is online</b>\n\nRole: <b>{role}</b>\nYour ID: <code>{user_id}</code>\nqBittorrent: <code>{qbt_ver}</code>\nActive Torrents: <b>{count}</b>",
+  "ping_msg": "<b>Pong!</b>\n\nBot: <code>@{username}</code>\nqBittorrent: <code>{qbt_ver}</code>\nTorrents: <b>{count}</b> | DL: <b>{dl}</b> | UL: <b>{ul}</b>\nTime: <code>{now}</code>",
+  "btn_refresh": "Refresh",
+  "callback_refreshed": "Updated!"
 }
